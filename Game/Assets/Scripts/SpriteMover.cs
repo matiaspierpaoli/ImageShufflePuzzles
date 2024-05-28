@@ -24,7 +24,7 @@ public class SpriteMover : MonoBehaviour
         if (!shuffling && CheckCompletion())
         {
             shuffling = true;
-            StartCoroutine(WaitShuffle(0.5f));
+            StartCoroutine(WaitShuffle(0.2f));
         }
     }
 

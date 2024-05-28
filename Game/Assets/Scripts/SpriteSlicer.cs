@@ -5,11 +5,11 @@ using UnityEngine.UI;
 
 public class SpriteSlicer : MonoBehaviour
 {
-    [SerializeField] private Transform piecePrefab;
     [SerializeField] private Transform gameTransform;
     [SerializeField] private float gapThickness;
-    
-    public int gridSize;
+
+    [HideInInspector] public int gridSize;
+    [HideInInspector] public Transform piecePrefab;
     [HideInInspector] public int emptyLocation;
     [HideInInspector] public List<Transform> pieces;
 
@@ -17,7 +17,6 @@ public class SpriteSlicer : MonoBehaviour
     {
         emptyLocation = -1;
         pieces = new List<Transform>();
-        CreateGamePieces();
     }
 
     public void CreateGamePieces()

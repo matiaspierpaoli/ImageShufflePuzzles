@@ -499,10 +499,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2cababa2713331143a042194b903211a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  piecePrefab: {fileID: 6963835961086730226, guid: 307ac535c545a434883420703aa3ea5f, type: 3}
   gameTransform: {fileID: 1884614280}
   gapThickness: 0.01
   gridSize: 3
+  piecePrefab: {fileID: 0}
   emptyLocation: 0
   pieces: []
 --- !u!114 &1468943708
@@ -591,7 +591,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e7d04435bd870ef49a3426de09caf3e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spriteSlicer: {fileID: 0}
+  difficultySettings: {fileID: 11400000, guid: d182ec0e042ae304c8ece9c8f2641617, type: 2}
+  spriteSlicer: {fileID: 1468943707}
 --- !u!4 &1747915094
 Transform:
   m_ObjectHideFlags: 0

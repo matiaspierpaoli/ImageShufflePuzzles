@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b336e09912ab0c4e8cede7e02c13d4e, type: 3}
+  m_Name: DifficultySettings
+  m_EditorClassIdentifier: 
+  currentDifficulty: 0
+  easySprites:
+  - {fileID: 6963835961086730226, guid: 307ac535c545a434883420703aa3ea5f, type: 3}
+  mediumSprites:
+  - {fileID: 6963835961086730226, guid: 307ac535c545a434883420703aa3ea5f, type: 3}
+  hardSprites:
+  - {fileID: 6963835961086730226, guid: 307ac535c545a434883420703aa3ea5f, type: 3}
+  easyGridSize: 3
+  mediumGridSize: 4
+  hardGridSize: 5
