@@ -12,13 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b336e09912ab0c4e8cede7e02c13d4e, type: 3}
   m_Name: DifficultySettings
   m_EditorClassIdentifier: 
-  currentDifficulty: 0
+  currentDifficulty: 2
   easySprites:
   - {fileID: 6963835961086730226, guid: 307ac535c545a434883420703aa3ea5f, type: 3}
+  - {fileID: 3378046986891449259, guid: ff1a2a411f658f8409c1b18a5bfbc8e4, type: 3}
   mediumSprites:
-  - {fileID: 6963835961086730226, guid: 307ac535c545a434883420703aa3ea5f, type: 3}
+  - {fileID: 2075231735895624056, guid: 70b546f70d6395147acf8441946e4f31, type: 3}
+  - {fileID: 8604895321658980294, guid: 7301081d53f330e48baf33f5e47964a9, type: 3}
   hardSprites:
-  - {fileID: 6963835961086730226, guid: 307ac535c545a434883420703aa3ea5f, type: 3}
+  - {fileID: 8178562578624519916, guid: 8df9ee1e0f8912e45ab3b567a91df74c, type: 3}
+  - {fileID: 238746086495524502, guid: 9280f6378a07b994493ebb933d72d1ee, type: 3}
   easyGridSize: 3
   mediumGridSize: 4
   hardGridSize: 5
