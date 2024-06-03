@@ -6,6 +6,7 @@ using UnityEngine.UI;
 public class SpriteSlicer : MonoBehaviour
 {
     [SerializeField] private Transform gameTransform;
+    [SerializeField] private Transform gameTransformDuplicate;
     [SerializeField] private float gapThickness;
 
     [HideInInspector] public int gridSize;
@@ -53,5 +54,14 @@ public class SpriteSlicer : MonoBehaviour
                 }
             }
         }
+    }
+
+    public void DuplicateGameboard()
+    {
+        Transform newGameboard = Instantiate(gameTransform, gameTransformDuplicate);
+
+        float scaleFactor = 0.7f;
+        newGameboard.localScale = new Vector3(scaleFactor, scaleFactor, scaleFactor);
+        newGameboard.localPosition = new Vector3(0f, 0f, 0f);
     }
 }

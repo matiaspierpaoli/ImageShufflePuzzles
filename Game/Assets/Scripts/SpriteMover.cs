@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Net;
@@ -7,7 +8,10 @@ public class SpriteMover : MonoBehaviour
 {
     [SerializeField] private SpriteSlicer spriteSlicer;
     [SerializeField] private InputManager inputManager;
-    private bool shuffling = false;
+
+    public event Action MovementCompletedEvent;
+
+    private bool isMovementAllowed = true;
 
     private void OnEnable()
     {
@@ -19,18 +23,10 @@ public class SpriteMover : MonoBehaviour
         inputManager.ClickEvent -= HandleClick;
     }
 
-    private void Update()
-    {
-        if (!shuffling && CheckCompletion())
-        {
-            shuffling = true;
-            StartCoroutine(WaitShuffle(0.2f));
-        }
-    }
-
     private void HandleClick(Vector2 context)
     {
-        HandleSpriteMovement(context, spriteSlicer.pieces, spriteSlicer.gridSize);
+        if (isMovementAllowed)
+            HandleSpriteMovement(context, spriteSlicer.pieces, spriteSlicer.gridSize);
     }
 
     private void HandleSpriteMovement(Vector2 mousePosition, List<Transform> pieces, int gridSize)
@@ -42,10 +38,26 @@ public class SpriteMover : MonoBehaviour
             {
                 if (pieces[i] == hit.transform)
                 {
-                    if (SwapIfValid(i, -spriteSlicer.gridSize, spriteSlicer.gridSize)) { break; }
-                    if (SwapIfValid(i, +gridSize, gridSize)) { break; }
-                    if (SwapIfValid(i, -1, 0)) { break; }
-                    if (SwapIfValid(i, +1, gridSize - 1)) { break; }
+                    if (SwapIfValid(i, -spriteSlicer.gridSize, spriteSlicer.gridSize)) 
+                    {
+                        MovementCompletedEvent?.Invoke();
+                        break; 
+                    }
+                    if (SwapIfValid(i, +gridSize, gridSize))
+                    {
+                        MovementCompletedEvent?.Invoke();
+                        break;
+                    }
+                    if (SwapIfValid(i, -1, 0))
+                    {
+                        MovementCompletedEvent?.Invoke();
+                        break;
+                    }
+                    if (SwapIfValid(i, +1, gridSize - 1))
+                    {
+                        MovementCompletedEvent?.Invoke();
+                        break;
+                    }
                 }
             }
         }
@@ -64,7 +76,8 @@ public class SpriteMover : MonoBehaviour
         }
         return false;
     }
-    private bool CheckCompletion()
+
+    public bool CheckCompletion()
     {
         for (int i = 0; i < spriteSlicer.pieces.Count; i++)
         {
@@ -76,22 +89,21 @@ public class SpriteMover : MonoBehaviour
         return true;
     }
 
-    private IEnumerator WaitShuffle(float duration)
-    {
-        yield return new WaitForSeconds(duration);
-        Shuffle();
-        shuffling = false;
-    }
+    //public IEnumerator WaitShuffle(float duration)
+    //{
+    //    yield return new WaitForSeconds(duration);
+    //    Shuffle();
+    //    ToggleMovementAllowance(true);
+    //}
 
-    // Brute force shuffling.
-    private void Shuffle()
+    public void Shuffle()
     {
         int count = 0;
         int last = 0;
         while (count < (spriteSlicer.gridSize * spriteSlicer.gridSize * spriteSlicer.gridSize))
         {
             // Pick a random location.
-            int rnd = Random.Range(0, spriteSlicer.gridSize * spriteSlicer.gridSize);
+            int rnd = UnityEngine.Random.Range(0, spriteSlicer.gridSize * spriteSlicer.gridSize);
             // Only thing we forbid is undoing the last move.
             if (rnd == last) { continue; }
             last = spriteSlicer.emptyLocation;
@@ -113,5 +125,10 @@ public class SpriteMover : MonoBehaviour
                 count++;
             }
         }
+    }
+
+    public void ToggleMovementAllowance(bool active)
+    {
+        isMovementAllowed = active;
     }
 }

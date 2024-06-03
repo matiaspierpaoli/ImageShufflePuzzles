@@ -1,4 +1,4 @@
-using System.Linq;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -6,13 +6,29 @@ public class GameManager : MonoBehaviour
 {
     public DifficultySettings difficultySettings;
     public SpriteSlicer spriteSlicer;
+    public SpriteMover spriteMover;
+
+    public event Action GameFinishedEvent;
 
     private Transform spriteDisplay;
+
+    private void OnEnable()
+    {
+        spriteMover.MovementCompletedEvent += OnMovementCompleted;
+    }
+
+    private void OnDisable()
+    {
+        spriteMover.MovementCompletedEvent -= OnMovementCompleted;
+    }
 
     private void Start()
     {
         SetRandomSprite();
         spriteSlicer.CreateGamePieces();
+        spriteSlicer.DuplicateGameboard();
+
+        spriteMover.Shuffle();
     }
 
     public void SetRandomSprite()
@@ -37,13 +53,22 @@ public class GameManager : MonoBehaviour
 
         if (selectedArray != null && selectedArray.Length > 0)
         {
-            int randomIndex = Random.Range(0, selectedArray.Length);
+            int randomIndex = UnityEngine.Random.Range(0, selectedArray.Length);
             spriteDisplay = selectedArray[randomIndex];
             spriteSlicer.piecePrefab = spriteDisplay;
         }
         else
         {
             Debug.LogWarning("No sprites available for the selected difficulty");
+        }
+    }
+
+    private void OnMovementCompleted()
+    {
+        if (spriteMover.CheckCompletion())
+        {
+            GameFinishedEvent?.Invoke();
+            spriteMover.ToggleMovementAllowance(false);
         }
     }
 }
