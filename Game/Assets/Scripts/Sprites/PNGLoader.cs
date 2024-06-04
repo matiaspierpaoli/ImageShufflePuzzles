@@ -1,16 +1,27 @@
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PNGLoader : MonoBehaviour
 {
-    [SerializeField] private string folderPath = "Builds/Custom Images"; // Relative path within the build
-    [SerializeField] private Transform parentTransform; // Parent transform to attach loaded images
-    [SerializeField] private string materialsFolder = "Assets/Materials"; // Folder to save materials
-    [SerializeField] private string prefabsFolder = "Assets/Prefabs"; // Folder to save prefabs
+    [SerializeField] private string folderPath = "Builds/Custom Images"; 
+    [SerializeField] private Transform parentTransform; 
+    [SerializeField] private string baseMaterialsFolder = "Assets/Materials/Custom/Base Images"; 
+    [SerializeField] private string blackAndWhiteMaterialsFolder = "Assets/Materials/Custom/Black And White";
+    [SerializeField] private string pixelatedMaterialsFolder = "Assets/Materials/Custom/Pixelated";
+    [SerializeField] private string prefabsFolder = "Assets/Prefabs/Custom Game Pieces";
+    [SerializeField] private RawImage customImagePrefab; 
+    [SerializeField] private Transform customImagesParent;
+    [SerializeField] private RawImage exampleImage;
+
+    private List<RawImage> customImages = new List<RawImage>();
 
     private void Start()
     {
         LoadPNGs();
+        exampleImage.texture = customImages.First().texture;
     }
 
     private void LoadPNGs()
@@ -34,13 +45,19 @@ public class PNGLoader : MonoBehaviour
                 {
                     // Create and save material
                     string textureName = Path.GetFileNameWithoutExtension(file);
-                    Material material = CreateMaterial(texture, textureName);
+                    Material baseMaterial = CreateBaseMaterial(texture, textureName);
+                    //Material blackAndWhiteMaterial = CreateBlackAndWhiteMaterial(texture, textureName);
 
                     // Create a quad and assign the material
-                    GameObject quad = CreateQuad(textureName, material);
+                    GameObject quad = CreateQuad(textureName, baseMaterial);
 
                     // Save the quad as a prefab
                     SaveAsPrefab(quad, textureName);
+
+                    RawImage newImage = Instantiate(customImagePrefab, customImagesParent);
+                    newImage.texture = texture;
+
+                    customImages.Add(newImage);
                 }
             }
         }
@@ -61,7 +78,7 @@ public class PNGLoader : MonoBehaviour
         return null;
     }
 
-    private Material CreateMaterial(Texture2D texture, string textureName)
+    private Material CreateBaseMaterial(Texture2D texture, string textureName)
     {
         Material material = new Material(Shader.Find("Unlit/Texture"));
         material.mainTexture = texture;
@@ -79,13 +96,46 @@ public class PNGLoader : MonoBehaviour
         }
 
         // Create folder if it doesn't exist
-        if (!Directory.Exists(materialsFolder))
+        if (!Directory.Exists(baseMaterialsFolder))
         {
-            Directory.CreateDirectory(materialsFolder);
+            Directory.CreateDirectory(baseMaterialsFolder);
         }
 
         // Save the material
-        string materialPath = Path.Combine(materialsFolder, $"{textureName}.mat");
+        string materialPath = Path.Combine(baseMaterialsFolder, $"{textureName}.mat");
+#if UNITY_EDITOR
+        UnityEditor.AssetDatabase.CreateAsset(material, materialPath);
+        UnityEditor.AssetDatabase.SaveAssets();
+#endif
+
+        return material;
+    }
+
+    private Material CreateBlackAndWhiteMaterial(Texture2D texture, string textureName)
+    {
+        Material material = new Material(Shader.Find("Unlit/Texture"));
+        material.mainTexture = texture;
+
+        // Check if material or texture is null
+        if (material == null)
+        {
+            Debug.LogError($"Failed to create material for {textureName}");
+            return null;
+        }
+        if (material.mainTexture == null)
+        {
+            Debug.LogError($"Texture is null for {textureName}");
+            return null;
+        }
+
+        // Create folder if it doesn't exist
+        if (!Directory.Exists(blackAndWhiteMaterialsFolder))
+        {
+            Directory.CreateDirectory(blackAndWhiteMaterialsFolder);
+        }
+
+        // Save the material
+        string materialPath = Path.Combine(blackAndWhiteMaterialsFolder, $"{textureName}.mat");
 #if UNITY_EDITOR
         UnityEditor.AssetDatabase.CreateAsset(material, materialPath);
         UnityEditor.AssetDatabase.SaveAssets();
