@@ -274,13 +274,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ce252714e36b7f48b26469e71918f85, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  folderPath: Builds/Custom Images
+  folderPath: Assets/Resources
   parentTransform: {fileID: 1004051600}
-  materialsFolder: Assets/Materials/Base Images
-  prefabsFolder: Assets/Prefabs/Custom Game Pieces
-  customImagePrefab: {fileID: 2802842592701332894, guid: 1a26ce91d1fb5ed4dbeaa83e5f8769f2, type: 3}
-  customImagesParent: {fileID: 2017419868}
-  exampleImage: {fileID: 451698139}
+  normalMaterialsFolder: Assets/Materials/Custom/BaseImages
+  grayScaleMaterialsFolder: Assets/Materials/Custom/BlackAndWhite
+  pixelatedMaterialsFolder: Assets/Materials/Custom/Pixelated
+  basePrefabsFolder: Assets/Prefabs/Custom Game Pieces/BasePieces
+  grayScalePrefabsFolder: Assets/Prefabs/Custom Game Pieces/GrayScalePieces
+  pixelatedPrefabsFolder: Assets/Prefabs/Custom Game Pieces/PixelatedPieces
 --- !u!4 &407490607
 Transform:
   m_ObjectHideFlags: 0

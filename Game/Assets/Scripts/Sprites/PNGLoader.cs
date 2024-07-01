@@ -1,27 +1,66 @@
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class PNGLoader : MonoBehaviour
 {
-    [SerializeField] private string folderPath = "Builds/Custom Images"; 
+    [Header("Config")]
     [SerializeField] private Transform parentTransform; 
-    [SerializeField] private string baseMaterialsFolder = "Assets/Materials/Custom/Base Images"; 
-    [SerializeField] private string blackAndWhiteMaterialsFolder = "Assets/Materials/Custom/Black And White";
-    [SerializeField] private string pixelatedMaterialsFolder = "Assets/Materials/Custom/Pixelated";
-    [SerializeField] private string prefabsFolder = "Assets/Prefabs/Custom Game Pieces";
-    [SerializeField] private RawImage customImagePrefab; 
-    [SerializeField] private Transform customImagesParent;
-    [SerializeField] private RawImage exampleImage;
 
-    private List<RawImage> customImages = new List<RawImage>();
+    [Header("PNG Resources")]
+    [SerializeField] private string folderPath = "Builds/Custom Images"; 
+
+    [Header("Materials")]
+    [SerializeField] private string normalMaterialsFolder = "Assets/Materials/Custom/BaseImages"; 
+    [SerializeField] private string grayScaleMaterialsFolder = "Assets/Materials/Custom/BlackAndWhite"; 
+    [SerializeField] private string pixelatedMaterialsFolder = "Assets/Materials/Custom/Pixelated";
+
+    [Header("Prefabs")]
+    [SerializeField] private string basePrefabsFolder = "Assets/Prefabs/Custom Game Pieces/BasePieces"; 
+    [SerializeField] private string grayScalePrefabsFolder = "Assets/Prefabs/Custom Game Pieces/GrayScalePieces"; 
+    [SerializeField] private string pixelatedPrefabsFolder = "Assets/Prefabs/Custom Game Pieces/PixelatedPieces"; 
 
     private void Start()
     {
+        ClearDirectory(normalMaterialsFolder);
+        ClearDirectory(grayScaleMaterialsFolder);
+        ClearDirectory(pixelatedMaterialsFolder);
+
+        ClearDirectory(basePrefabsFolder);
+        ClearDirectory(grayScalePrefabsFolder);
+        ClearDirectory(pixelatedPrefabsFolder);
+
         LoadPNGs();
-        exampleImage.texture = customImages.First().texture;
+    }
+
+    private void OnApplicationQuit()
+    {
+        ClearDirectory(normalMaterialsFolder);
+        ClearDirectory(grayScaleMaterialsFolder);
+        ClearDirectory(pixelatedMaterialsFolder);
+
+        ClearDirectory(basePrefabsFolder);
+        ClearDirectory(grayScalePrefabsFolder);
+        ClearDirectory(pixelatedPrefabsFolder);
+    }
+
+    private void ClearDirectory(string path)
+    {
+        if (Directory.Exists(path))
+        {
+            DirectoryInfo directory = new DirectoryInfo(path);
+            foreach (FileInfo file in directory.GetFiles())
+            {
+                file.Delete();
+            }
+            foreach (DirectoryInfo subDirectory in directory.GetDirectories())
+            {
+                subDirectory.Delete(true);
+            }
+        }
+        else
+        {
+            Directory.CreateDirectory(path);
+        }
     }
 
     private void LoadPNGs()
@@ -43,23 +82,37 @@ public class PNGLoader : MonoBehaviour
 
                 if (texture != null)
                 {
-                    // Create and save material
+                    Debug.Log($"Successfully loaded texture: {file}");
+
+                    // Create and save materials
                     string textureName = Path.GetFileNameWithoutExtension(file);
-                    Material baseMaterial = CreateBaseMaterial(texture, textureName);
-                    //Material blackAndWhiteMaterial = CreateBlackAndWhiteMaterial(texture, textureName);
+                    Material normalMaterial = CreateMaterial(texture, textureName, "Unlit/Texture", normalMaterialsFolder);
+                    Material grayscaleMaterial = CreateMaterial(texture, textureName, "Custom/GrayscaleShader", grayScaleMaterialsFolder);
+                    Material pixelatedMaterial = CreateMaterial(texture, textureName, "Custom/PixelatedShader", pixelatedMaterialsFolder);
 
-                    // Create a quad and assign the material
-                    GameObject quad = CreateQuad(textureName, baseMaterial);
+                    if (normalMaterial != null && grayscaleMaterial != null && pixelatedMaterial != null)
+                    {
+                        // Create quads and assign materials
+                        GameObject baseQuad = CreateQuad(textureName + "_Base", normalMaterial);
+                        GameObject grayscaleQuad = CreateQuad(textureName + "_Grayscale", grayscaleMaterial);
+                        GameObject pixelatedQuad = CreateQuad(textureName + "_Pixelated", pixelatedMaterial);
 
-                    // Save the quad as a prefab
-                    SaveAsPrefab(quad, textureName);
-
-                    RawImage newImage = Instantiate(customImagePrefab, customImagesParent);
-                    newImage.texture = texture;
-
-                    customImages.Add(newImage);
+                        // Save the quads as prefabs
+                        SaveAsPrefab(baseQuad, textureName + "_Base", basePrefabsFolder);
+                        SaveAsPrefab(grayscaleQuad, textureName + "_Grayscale", grayScalePrefabsFolder);
+                        SaveAsPrefab(pixelatedQuad, textureName + "_Pixelated", pixelatedPrefabsFolder);
+                    }
+                }
+                else
+                {
+                    Debug.LogError($"Failed to load texture: {file}");
                 }
             }
+
+#if UNITY_EDITOR
+            UnityEditor.AssetDatabase.SaveAssets();
+            UnityEditor.AssetDatabase.Refresh();
+#endif
         }
         else
         {
@@ -73,69 +126,48 @@ public class PNGLoader : MonoBehaviour
         Texture2D texture = new Texture2D(2, 2);
         if (texture.LoadImage(fileData))
         {
+            Debug.Log($"Loaded texture from {filePath} with size {texture.width}x{texture.height}");
             return texture;
+        }
+        else
+        {
+            Debug.LogError($"Failed to load texture from {filePath}");
         }
         return null;
     }
 
-    private Material CreateBaseMaterial(Texture2D texture, string textureName)
+    private Material CreateMaterial(Texture2D texture, string textureName, string shaderName, string materialsPath)
     {
-        Material material = new Material(Shader.Find("Unlit/Texture"));
+        Shader shader = Shader.Find(shaderName);
+        if (shader == null)
+        {
+            Debug.LogError($"Shader not found: {shaderName}");
+            return null;
+        }
+
+        Material material = new Material(shader);
         material.mainTexture = texture;
 
         // Check if material or texture is null
         if (material == null)
         {
-            Debug.LogError($"Failed to create material for {textureName}");
+            Debug.LogError($"Failed to create material for {textureName} using {shaderName}");
             return null;
         }
         if (material.mainTexture == null)
         {
-            Debug.LogError($"Texture is null for {textureName}");
+            Debug.LogError($"Texture is null for {textureName} using {shaderName}");
             return null;
         }
 
         // Create folder if it doesn't exist
-        if (!Directory.Exists(baseMaterialsFolder))
+        if (!Directory.Exists(materialsPath))
         {
-            Directory.CreateDirectory(baseMaterialsFolder);
+            Directory.CreateDirectory(materialsPath);
         }
 
         // Save the material
-        string materialPath = Path.Combine(baseMaterialsFolder, $"{textureName}.mat");
-#if UNITY_EDITOR
-        UnityEditor.AssetDatabase.CreateAsset(material, materialPath);
-        UnityEditor.AssetDatabase.SaveAssets();
-#endif
-
-        return material;
-    }
-
-    private Material CreateBlackAndWhiteMaterial(Texture2D texture, string textureName)
-    {
-        Material material = new Material(Shader.Find("Unlit/Texture"));
-        material.mainTexture = texture;
-
-        // Check if material or texture is null
-        if (material == null)
-        {
-            Debug.LogError($"Failed to create material for {textureName}");
-            return null;
-        }
-        if (material.mainTexture == null)
-        {
-            Debug.LogError($"Texture is null for {textureName}");
-            return null;
-        }
-
-        // Create folder if it doesn't exist
-        if (!Directory.Exists(blackAndWhiteMaterialsFolder))
-        {
-            Directory.CreateDirectory(blackAndWhiteMaterialsFolder);
-        }
-
-        // Save the material
-        string materialPath = Path.Combine(blackAndWhiteMaterialsFolder, $"{textureName}.mat");
+        string materialPath = Path.Combine(materialsPath, $"{textureName}_{shaderName.Replace('/', '_')}.mat");
 #if UNITY_EDITOR
         UnityEditor.AssetDatabase.CreateAsset(material, materialPath);
         UnityEditor.AssetDatabase.SaveAssets();
@@ -167,19 +199,20 @@ public class PNGLoader : MonoBehaviour
         return quad;
     }
 
-    private void SaveAsPrefab(GameObject quad, string name)
+    private void SaveAsPrefab(GameObject quad, string name, string prefabsPath)
     {
         // Create folder if it doesn't exist
-        if (!Directory.Exists(prefabsFolder))
+        if (!Directory.Exists(prefabsPath))
         {
-            Directory.CreateDirectory(prefabsFolder);
+            Directory.CreateDirectory(prefabsPath);
         }
 
         // Save the quad as a prefab
-        string prefabPath = Path.Combine(prefabsFolder, $"{name}.prefab");
+        string prefabPath = Path.Combine(prefabsPath, $"{name}.prefab");
 #if UNITY_EDITOR
         UnityEditor.PrefabUtility.SaveAsPrefabAsset(quad, prefabPath);
         UnityEditor.AssetDatabase.SaveAssets();
+        UnityEditor.AssetDatabase.Refresh();
 #endif
     }
 }
